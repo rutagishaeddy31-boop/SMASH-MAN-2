@@ -1,7 +1,16 @@
+body {
+  background: #0f0f0f;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  margin: 0;
+  overflow: hidden;
+}
+
 #ui-layer {
-  position: relative; /* Add this */
-  z-index: 10;        /* Keep this above the game */
-  pointer-events: all; /* Ensure clicks pass through to the button */
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
   margin-top: 15vh;
   padding: 40px;
   border: 5px solid #f39c12;
@@ -11,18 +20,32 @@
   box-shadow: 0 0 30px #f39c12;
 }
 
-#game-canvas {
-  position: fixed;   /* Changed from absolute to fixed */
-  top: 0; 
-  left: 0;
-  width: 100vw; 
-  height: 100vh;
-  z-index: 1;        /* Sits behind everything */
-  pointer-events: none; /* Mouse ignores this layer */
+#login-btn {
+  background: #f39c12;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer; /* Makes the hand icon appear */
+  border-radius: 10px;
+  transition: 0.3s;
+  position: relative;
+  z-index: 11;
 }
 
-button {
-  cursor: pointer;   /* Makes the "Hand" icon appear */
-  pointer-events: all; 
-  /* ... keep your other button styles ... */
+#login-btn:hover {
+  background: #e67e22;
+  transform: scale(1.05);
 }
+
+#game-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none; /* Clicks pass through the background */
+}
+
+h1 { font-size: 3rem; color: #f39c12; text-shadow: 3px 3px #c0392b; }
