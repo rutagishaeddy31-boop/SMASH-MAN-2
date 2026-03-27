@@ -8,78 +8,70 @@ const firebaseConfig = {
   appId: "1:726364748683:web:33bc76e138241256ee0d8e"
 };
 
-// 2. INITIALIZE FIREBASE
+// 2. INITIALIZE
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const db = firebase.database();
-const provider = new firebase.auth.GoogleAuthProvider();
 
 // 3. GLOBALS
 let myId = null;
+let allBullets = {}; 
 const loginBtn = document.getElementById('login-btn');
 const statusText = document.getElementById('status-text');
-let allBullets = {}; // Keep track of bullets for collision detection
 
-// 4. LOGIN LOGIC
+// 4. GUEST LOGIN (Bypasses Unauthorized Domain Error)
 loginBtn.onclick = () => {
-  statusText.innerText = "Connecting to Google...";
+  statusText.innerText = "Entering Arena...";
+  myId = "guest-" + Math.floor(Math.random() * 10000);
   
-  auth.signInWithPopup(provider)
-    .then((result) => {
-      const user = result.user;
-      myId = user.uid;
+  const user = {
+    uid: myId,
+    displayName: "Pilot_" + myId.split('-')[1]
+  };
 
-      // Update UI
-      document.getElementById('auth-box').style.display = 'none';
-      document.getElementById('hud').style.display = 'block';
-      document.getElementById('player-name-ui').innerText = user.displayName;
-      
-      // Listen for my own coin updates
-      db.ref('players/' + myId + '/coins').on('value', (snap) => {
-        document.getElementById('coin-count').innerText = snap.val() || 0;
-      });
+  document.getElementById('auth-box').style.display = 'none';
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('player-name-ui').innerText = user.displayName;
+  
+  // Coin Listener
+  db.ref('players/' + myId + '/coins').on('value', (snap) => {
+    document.getElementById('coin-count').innerText = snap.val() || 0;
+  });
 
-      startPlayerSync(user);
-    })
-    .catch((err) => {
-      console.error("Login Error:", err);
-      statusText.innerText = "Login Failed: " + err.code;
-    });
+  startPlayerSync(user);
 };
 
 // 5. MULTIPLAYER SYNC
 function startPlayerSync(user) {
   const myRef = db.ref('players/' + myId);
   
-  // Set initial player data
   myRef.set({
     name: user.displayName,
-    x: Math.random() * (window.innerWidth - 50),
-    y: Math.random() * (window.innerHeight - 50),
+    x: Math.random() * (window.innerWidth - 60),
+    y: Math.random() * (window.innerHeight - 60),
     color: `hsl(${Math.random() * 360}, 70%, 60%)`,
     coins: 0
   });
 
   myRef.onDisconnect().remove();
 
-  // Listen for all players
-  db.ref('players').on('value', (snapshot) => {
-    const players = snapshot.val() || {};
+  // Listen for Players
+  db.ref('players').on('value', (snap) => {
+    const players = snap.val() || {};
     drawArena(players);
+    // CRITICAL: Only check collisions if we have data
     if (allBullets) checkCollisions(allBullets, players);
   });
 
-  // Listen for all bullets
-  db.ref('bullets').on('value', (snapshot) => {
-    allBullets = snapshot.val() || {};
+  // Listen for Bullets
+  db.ref('bullets').on('value', (snap) => {
+    allBullets = snap.val() || {};
     renderProjectiles(allBullets);
   });
 }
 
-// 6. DRAWING THE WORLD
+// 6. DRAWING FUNCTIONS
 function drawArena(players) {
   const canvas = document.getElementById('game-canvas');
-  
   Object.keys(players).forEach(id => {
     let el = document.getElementById(id);
     if (!el) {
@@ -89,8 +81,8 @@ function drawArena(players) {
       el.innerHTML = `<span class="player-name">${players[id].name}</span>`;
       canvas.appendChild(el);
     }
-    el.style.left = players[id].x + 'px';
-    el.style.top = players[id].y + 'px';
+    el.style.left = (players[id].x || 0) + 'px';
+    el.style.top = (players[id].y || 0) + 'px';
     el.style.background = players[id].color;
   });
 
@@ -109,8 +101,8 @@ function renderProjectiles(bullets) {
       bEl.className = 'bullet';
       canvas.appendChild(bEl);
     }
-    bEl.style.left = bullets[id].x + 'px';
-    bEl.style.top = bullets[id].y + 'px';
+    bEl.style.left = (bullets[id].x || 0) + 'px';
+    bEl.style.top = (bullets[id].y || 0) + 'px';
   });
 
   document.querySelectorAll('.bullet').forEach(el => {
@@ -118,7 +110,7 @@ function renderProjectiles(bullets) {
   });
 }
 
-// 7. CONTROLS (Movement & Shooting)
+// 7. CONTROLS
 window.addEventListener('keydown', (e) => {
   if (!myId) return;
   const myRef = db.ref('players/' + myId);
@@ -126,39 +118,43 @@ window.addEventListener('keydown', (e) => {
   myRef.once('value').then(snap => {
     let data = snap.val();
     if (!data) return;
-    const speed = 20;
+    const speed = 25;
 
-    // Movement
     if (e.key === 'ArrowUp') data.y -= speed;
     if (e.key === 'ArrowDown') data.y += speed;
     if (e.key === 'ArrowLeft') data.x -= speed;
     if (e.key === 'ArrowRight') data.x += speed;
     
-    // Shooting (Spacebar)
     if (e.code === 'Space') {
-      const bulletId = 'b-' + Date.now();
-      db.ref('bullets/' + bulletId).set({
+      const bId = 'b-' + Date.now();
+      db.ref('bullets/' + bId).set({
         owner: myId,
-        x: data.x + 20,
-        y: data.y + 20,
-        velocityX: 20
+        x: data.x + 15,
+        y: data.y + 15
       });
-      setTimeout(() => db.ref('bullets/' + bulletId).remove(), 2000);
+      setTimeout(() => db.ref('bullets/' + bId).remove(), 1000);
     }
-
     myRef.update({ x: data.x, y: data.y });
   });
 });
 
-// 8. COMBAT LOGIC
+// 8. COLLISION LOGIC (PERMANENT FIX FOR LINE 56)
 function checkCollisions(bullets, players) {
   Object.keys(bullets).forEach(bId => {
     const b = bullets[bId];
+    // Guard Clause: Skip if bullet data is incomplete
+    if (!b || b.x === undefined || b.y === undefined) return;
+
     Object.keys(players).forEach(pId => {
       if (b.owner === pId) return;
       const p = players[pId];
+      // Guard Clause: Skip if player data is incomplete
+      if (!p || p.x === undefined || p.y === undefined) return;
+
       const dist = Math.sqrt(Math.pow(b.x - p.x, 2) + Math.pow(b.y - p.y, 2));
-      if (dist < 35) handleHit(pId, bId);
+      if (dist < 35) {
+        handleHit(pId, bId);
+      }
     });
   });
 }
@@ -166,10 +162,22 @@ function checkCollisions(bullets, players) {
 function handleHit(victimId, bulletId) {
   db.ref('bullets/' + bulletId).remove();
   db.ref('players/' + victimId).update({
-    x: Math.random() * (window.innerWidth - 50),
-    y: Math.random() * (window.innerHeight - 50)
+    x: Math.random() * (window.innerWidth - 60),
+    y: Math.random() * (window.innerHeight - 60)
   });
-  if (myId) {
-    db.ref('players/' + myId + '/coins').transaction(c => (c || 0) + 2);
-  }
+  // Reward the shooter
+  db.ref('players/' + myId + '/coins').transaction(c => (c || 0) + 1);
 }
+
+// 9. BULLET MOVEMENT LOOP (Visual Only)
+setInterval(() => {
+  if (allBullets) {
+    Object.keys(allBullets).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        let curX = parseFloat(el.style.left) || 0;
+        el.style.left = (curX + 12) + 'px';
+      }
+    });
+  }
+}, 30);
