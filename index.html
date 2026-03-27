@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMASH MAN 2.0</title>
-    
     <link rel="stylesheet" href="style.css">
-
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -18,16 +16,16 @@
       
       <div id="auth-box">
         <p id="status-text">Arena Status: Online</p>
-        <button id="login-btn">ENTER ARENA (GOOGLE LOGIN)</button>
+        <button id="login-btn">ENTER ARENA</button>
       </div>
 
-      <div id="hud" style="display:none;">
+      <div id="hud">
         <div class="stat">PILOT: <span id="player-name-ui">---</span></div>
         <div class="stat">COINS: <span id="coin-count">0</span></div>
       </div>
     </div>
 
-    <div id="game-canvas"></div>
+    <div id="game-arena"></div>
 
     <script src="script.js"></script>
 </body>
