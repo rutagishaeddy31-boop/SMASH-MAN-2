@@ -119,3 +119,6 @@ window.addEventListener('keydown', (e) => {
     myRef.update({ x: data.x, y: data.y });
   });
 });
+    myRef.update({ x: data.x, y: data.y });
+  });
+});
