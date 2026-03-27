@@ -1,4 +1,4 @@
-body {
+bbody {
   background: #0f0f0f;
   color: #fff;
   font-family: 'Segoe UI', sans-serif;
@@ -59,4 +59,82 @@ h1 { font-size: 3rem; color: #f39c12; text-shadow: 3px 3px #c0392b; }
   background: rgba(0,0,0,0.5);
   padding: 2px 5px;
   border-radius: 4px;
+}
+.bullet {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ff4757; /* Bright Red */
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ff4757;
+  z-index: 5;
+  transition: all 0.05s linear; /* Fast movement sync */
+}
+#hud {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  border: 2px solid #f39c12;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  color: #f39c12;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.stat {
+  margin-bottom: 5px;
+  font-weight: bold;
+  text-shadow: 0 0 5px #f39c12;
+}
+body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
+
+#game-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 1; /* Background layer */
+}
+
+#ui-layer {
+  position: relative;
+  z-index: 10; /* Foreground layer */
+  text-align: center;
+  margin-top: 20vh;
+}
+
+#hud {
+  position: fixed;
+  top: 20px; left: 20px;
+  background: rgba(0,0,0,0.8);
+  padding: 15px;
+  border: 2px solid #f39c12;
+  color: #f39c12;
+}
+
+/* THE KARTS - If this is missing, you see nothing! */
+.kart {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: #f39c12;
+  border: 3px solid white;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(255,255,255,0.5);
+  transition: all 0.1s linear;
+}
+
+.player-name {
+  position: absolute;
+  top: -30px;
+  background: black;
+  padding: 2px 5px;
+  font-size: 12px;
+  white-space: nowrap;
 }
