@@ -1,137 +1,158 @@
-// 1. CONFIGURATION
+/** * SMASH MAN 2.0 - CORE ENGINE
+ * Features: Pilot Selection, 3D Physics, Live Sync
+ */
+
+// 1. CONFIG & DB
 const firebaseConfig = {
-  apiKey: "AIzaSyDiv4wVhq4dS0j_nOjzWo1LN8nmGBUvoxc",
-  authDomain: "smash-man-2-0.firebaseapp.com",
-  projectId: "smash-man-2-0",
-  databaseURL: "https://smash-man-2-0-default-rtdb.firebaseio.com",
-  storageBucket: "smash-man-2-0.firebasestorage.app",
-  messagingSenderId: "726364748683",
-  appId: "1:726364748683:web:33bc76e138241256ee0d8e"
+    apiKey: "AIzaSyDiv4wVhq4dS0j_nOjzWo1LN8nmGBUvoxc",
+    authDomain: "smash-man-2-0.firebaseapp.com",
+    projectId: "smash-man-2-0",
+    databaseURL: "https://smash-man-2-0-default-rtdb.firebaseio.com",
+    storageBucket: "smash-man-2-0.firebasestorage.app",
+    messagingSenderId: "726364748683",
+    appId: "1:726364748683:web:33bc76e138241256ee0d8e"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// 2. GLOBALS
+// 2. STATE VARIABLES
 let myId = null;
-let allBullets = {};
-const loginBtn = document.getElementById('login-btn');
+let selectedColor = "#00f2ff";
+let myData = { x: 2500, y: 2500, angle: 0, kills: 0, hp: 100, name: "" };
+let players = {};
+const keys = {};
 
-// 3. GUEST LOGIN FLOW
-loginBtn.onclick = () => {
-  myId = "guest-" + Math.floor(Math.random() * 10000);
-  const myName = "Pilot_" + myId.split('-')[1];
-
-  document.getElementById('auth-box').style.display = 'none';
-  document.getElementById('hud').style.display = 'block';
-  document.getElementById('player-name-ui').innerText = myName;
-
-  startSync(myName);
-};
-
-// 4. MULTIPLAYER SYNC
-function startSync(name) {
-  const myRef = db.ref('players/' + myId);
-  myRef.set({
-    name: name, x: window.innerWidth/2, y: window.innerHeight/2,
-    color: `hsl(${Math.random() * 360}, 70%, 60%)`, coins: 0
-  });
-  myRef.onDisconnect().remove();
-
-  db.ref('players').on('value', snap => {
-    const players = snap.val() || {};
-    updateArena(players);
-    if (allBullets) checkHits(allBullets, players);
-  });
-
-  db.ref('bullets').on('value', snap => {
-    allBullets = snap.val() || {};
-    updateBullets(allBullets);
-  });
-}
-
-// 5. DRAWING
-function updateArena(players) {
-  const arena = document.getElementById('game-arena');
-  Object.keys(players).forEach(id => {
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement('div');
-      el.id = id; el.className = 'kart';
-      el.innerHTML = `<span class="player-name">${players[id].name}</span>`;
-      arena.appendChild(el);
-    }
-    el.style.left = (players[id].x || 0) + 'px';
-    el.style.top = (players[id].y || 0) + 'px';
-    el.style.backgroundColor = players[id].color;
-  });
-  document.querySelectorAll('.kart').forEach(el => { if(!players[el.id]) el.remove(); });
-}
-
-function updateBullets(bullets) {
-  const arena = document.getElementById('game-arena');
-  Object.keys(bullets).forEach(id => {
-    let bEl = document.getElementById(id);
-    if (!bEl) {
-      bEl = document.createElement('div');
-      bEl.id = id; bEl.className = 'bullet';
-      arena.appendChild(bEl);
-    }
-    bEl.style.left = (bullets[id].x || 0) + 'px';
-    bEl.style.top = (bullets[id].y || 0) + 'px';
-  });
-  document.querySelectorAll('.bullet').forEach(el => { if(!bullets[el.id]) el.remove(); });
-}
-
-// 6. CONTROLS
-window.addEventListener('keydown', e => {
-  if (!myId) return;
-  const myRef = db.ref('players/' + myId);
-  myRef.once('value').then(snap => {
-    let data = snap.val();
-    if (!data) return;
-    const speed = 25;
-    if (e.key === 'ArrowUp') data.y -= speed;
-    if (e.key === 'ArrowDown') data.y += speed;
-    if (e.key === 'ArrowLeft') data.x -= speed;
-    if (e.key === 'ArrowRight') data.x += speed;
-
-    if (e.code === 'Space') {
-      const bId = 'b-' + Date.now();
-      db.ref('bullets/' + bId).set({ owner: myId, x: data.x + 15, y: data.y + 15 });
-      setTimeout(() => db.ref('bullets/' + bId).remove(), 1000);
-    }
-    myRef.update({ x: data.x, y: data.y });
-  });
+// 3. SELECTION LOGIC
+document.querySelectorAll('.pilot-option').forEach(opt => {
+    opt.onclick = () => {
+        document.querySelectorAll('.pilot-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedColor = opt.dataset.color;
+    };
 });
 
-// 7. COLLISION (THE FIX FOR LINE 56)
-function checkHits(bullets, players) {
-  Object.keys(bullets).forEach(bId => {
-    const b = bullets[bId];
-    if (!b || b.x === undefined) return; // Guard clause
+document.getElementById('btn-join').onclick = () => {
+    const name = document.getElementById('username').value;
+    if(!name) return alert("Please enter a Pilot Name!");
+    
+    myId = "pilot_" + Math.random().toString(36).substr(2, 5);
+    myData.name = name;
+    
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('ui-name').innerText = name;
+    
+    startArena();
+};
 
-    Object.keys(players).forEach(pId => {
-      if (b.owner === pId) return;
-      const p = players[pId];
-      if (!p || p.x === undefined) return; // Guard clause
+// 4. ARENA ENGINE
+function startArena() {
+    const myRef = db.ref('players/' + myId);
+    myRef.set({ ...myData, color: selectedColor });
+    myRef.onDisconnect().remove();
 
-      const dist = Math.sqrt(Math.pow(b.x - p.x, 2) + Math.pow(b.y - p.y, 2));
-      if (dist < 35) {
-        db.ref('bullets/' + bId).remove();
-        db.ref('players/' + pId).update({ x: Math.random()*500, y: Math.random()*500 });
-        db.ref('players/' + myId + '/coins').transaction(c => (c || 0) + 1);
-      }
+    // Listen for All Players
+    db.ref('players').on('value', snap => {
+        players = snap.val() || {};
+        renderFrame();
     });
-  });
+
+    // Listen for Combat
+    db.ref('bullets').on('value', snap => {
+        const bullets = snap.val() || {};
+        renderBullets(bullets);
+        checkCollisions(bullets);
+    });
+
+    requestAnimationFrame(gameLoop);
 }
 
-// 8. ANIMATION LOOP
-setInterval(() => {
-  if (allBullets) {
-    Object.keys(allBullets).forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.left = (parseFloat(el.style.left) + 15) + 'px';
+// 5. PHYSICS LOOP
+function gameLoop() {
+    if(!myId) return;
+    
+    let moved = false;
+    const rotSpeed = 4;
+    const moveSpeed = 8;
+
+    if(keys['ArrowLeft']) { myData.angle -= rotSpeed; moved = true; }
+    if(keys['ArrowRight']) { myData.angle += rotSpeed; moved = true; }
+    
+    if(keys['ArrowUp']) {
+        const rad = (myData.angle - 90) * (Math.PI / 180);
+        myData.x += Math.cos(rad) * moveSpeed;
+        myData.y += Math.sin(rad) * moveSpeed;
+        moved = true;
+    }
+
+    if(moved) {
+        // Boundary Guard
+        myData.x = Math.max(0, Math.min(5000, myData.x));
+        myData.y = Math.max(0, Math.min(5000, myData.y));
+        
+        db.ref('players/' + myId).update({
+            x: myData.x, y: myData.y, angle: myData.angle
+        });
+        
+        // Dynamic Camera: Center the arena around the player
+        const viewport = document.getElementById('floor-layer');
+        viewport.style.left = (-myData.x + (window.innerWidth/2)) + 'px';
+        viewport.style.top = (-myData.y + (window.innerHeight/2)) + 'px';
+    }
+    
+    requestAnimationFrame(gameLoop);
+}
+
+// 6. RENDERING
+function renderFrame() {
+    const container = document.getElementById('entities-layer');
+    Object.keys(players).forEach(id => {
+        // Fix for "Line 56" crash: check if data exists before rendering
+        if(!players[id]) return;
+
+        let el = document.getElementById(id);
+        if(!el) {
+            el = document.createElement('div'); el.id = id; el.className = 'kart';
+            el.innerHTML = `
+                <div class="kart-body" style="background:${players[id].color}">
+                    <div class="kart-cabin"></div>
+                    <div class="kart-exhaust"></div>
+                </div>
+                <div class="player-tag">${players[id].name}</div>
+            `;
+            container.appendChild(el);
+        }
+        el.style.left = players[id].x + 'px';
+        el.style.top = players[id].y + 'px';
+        el.style.transform = `rotateZ(${players[id].angle}deg)`;
     });
-  }
-}, 30);
+    
+    // Cleanup removed players
+    document.querySelectorAll('.kart').forEach(node => {
+        if(!players[node.id]) node.remove();
+    });
+}
+
+// 7. INPUTS & SHOOTING
+window.onkeydown = (e) => { 
+    keys[e.key] = true;
+    if(e.code === 'Space' && myId) {
+        fireCannon();
+    }
+};
+window.onkeyup = (e) => { keys[e.key] = false; };
+
+function fireCannon() {
+    const bId = "b_" + Date.now();
+    const rad = (myData.angle - 90) * (Math.PI / 180);
+    db.ref('bullets/' + bId).set({
+        owner: myId,
+        x: myData.x + 25,
+        y: myData.y + 25,
+        vx: Math.cos(rad) * 20,
+        vy: Math.sin(rad) * 20
+    });
+    document.getElementById('sfx-fire').play();
+    setTimeout(() => db.ref('bullets/' + bId).remove(), 1000);
+}
