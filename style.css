@@ -1,165 +1,87 @@
-body {
-  background: #0f0f0f;
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-  text-align: center;
-  overflow: hidden;
+:root {
+    --cyan: #00f2ff;
+    --pink: #ff0044;
+    --purple: #bc13fe;
+    --gold: #ffcc00;
 }
 
-#ui-layer {
-  margin-top: 15vh;
-  padding: 40px;
-  border: 5px solid #f39c12;
-  display: inline-block;
-  background: rgba(0,0,0,0.8);
-  border-radius: 20px;
-  box-shadow: 0 0 30px #f39c12;
+body { margin: 0; background: #000; color: #fff; font-family: 'Orbitron', sans-serif; overflow: hidden; }
+
+/* 3D ARENA VIEWPORT */
+#arena-viewport {
+    width: 100vw; height: 100vh;
+    perspective: 800px;
+    background: radial-gradient(circle, #1a1a2e 0%, #000 100%);
 }
 
-button {
-  background: #f39c12;
-  border: none;
-  padding: 15px 30px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 10px;
-  transition: 0.3s;
+#floor-layer {
+    position: absolute; width: 5000px; height: 5000px;
+    top: -2000px; left: -2000px;
+    transform: rotateX(60deg);
+    transform-style: preserve-3d;
 }
 
-button:hover {
-  background: #e67e22;
-  transform: scale(1.1) rotate(-2deg);
+#grid-pattern {
+    width: 100%; height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 242, 255, 0.1) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(0, 242, 255, 0.1) 2px, transparent 2px);
+    background-size: 100px 100px;
 }
 
-h1 { font-size: 3rem; color: #f39c12; text-shadow: 3px 3px #c0392b; }
-#game-canvas {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: -1; /* Sits behind the UI */
-}
-
+/* THE PILOT (3D KART MODEL) */
 .kart {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  border: 2px solid white;
-  transition: all 0.1s linear; /* Smooths out the network lag */
-  display: flex;
-  justify-content: center;
+    width: 50px; height: 70px; position: absolute;
+    transform-style: preserve-3d; z-index: 100;
 }
 
-.player-name {
-  position: absolute;
-  top: -25px;
-  font-size: 12px;
-  white-space: nowrap;
-  background: rgba(0,0,0,0.5);
-  padding: 2px 5px;
-  border-radius: 4px;
-}
-.bullet {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: #ff4757; /* Bright Red */
-  border-radius: 50%;
-  box-shadow: 0 0 10px #ff4757;
-  z-index: 5;
-  transition: all 0.05s linear; /* Fast movement sync */
-}
-#hud {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 15px;
-  border: 2px solid #f39c12;
-  border-radius: 10px;
-  font-family: 'Courier New', monospace;
-  color: #f39c12;
-  z-index: 1000;
-  pointer-events: none;
+/* Designing the Kart Structure to avoid the "Rectangle" look */
+.kart-body {
+    width: 100%; height: 100%;
+    background: #333; border: 3px solid #fff;
+    border-radius: 8px; position: relative;
 }
 
-.stat {
-  margin-bottom: 5px;
-  font-weight: bold;
-  text-shadow: 0 0 5px #f39c12;
-}
-body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
-
-#game-canvas {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: 1; /* Background layer */
+.kart-cabin {
+    position: absolute; top: 15px; left: 10px;
+    width: 30px; height: 25px; background: rgba(255,255,255,0.4);
+    transform: translateZ(10px); border-radius: 5px;
 }
 
-#ui-layer {
-  position: relative;
-  z-index: 10; /* Foreground layer */
-  text-align: center;
-  margin-top: 20vh;
+.kart-exhaust {
+    position: absolute; bottom: -10px; left: 15px;
+    width: 20px; height: 10px; background: var(--pink);
+    filter: blur(5px); animation: engine-pulse 0.1s infinite;
 }
 
-#hud {
-  position: fixed;
-  top: 20px; left: 20px;
-  background: rgba(0,0,0,0.8);
-  padding: 15px;
-  border: 2px solid #f39c12;
-  color: #f39c12;
+/* PILOT SELECTION UI */
+#overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
+    pointer-events: auto;
 }
 
-/* THE KARTS - If this is missing, you see nothing! */
-.kart {
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  background: #f39c12;
-  border: 3px solid white;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  box-shadow: 0 0 15px rgba(255,255,255,0.5);
-  transition: all 0.1s linear;
+#login-modal {
+    background: #111; border: 2px solid var(--cyan); padding: 40px;
+    border-radius: 20px; text-align: center; box-shadow: 0 0 30px var(--cyan);
 }
 
-.player-name {
-  position: absolute;
-  top: -30px;
-  background: black;
-  padding: 2px 5px;
-  font-size: 12px;
-  white-space: nowrap;
+.pilot-grid { display: flex; gap: 20px; margin: 30px 0; }
+.pilot-option {
+    border: 2px solid #444; padding: 15px; border-radius: 10px; cursor: pointer;
+    transition: 0.3s; width: 120px;
 }
-#game-arena {
-  width: 100vw;   /* Must have width */
-  height: 100vh;  /* Must have height */
-  position: relative;
-}
-body { margin: 0; background: #1a1a1a; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+.pilot-option.selected { border-color: var(--cyan); background: rgba(0, 242, 255, 0.1); }
 
-#ui-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; justify-content: center; align-items: center; }
-#auth-box { pointer-events: all; background: rgba(0,0,0,0.9); padding: 30px; border: 3px solid #f39c12; text-align: center; border-radius: 15px; box-shadow: 0 0 20px #f39c12; }
-#hud { position: absolute; top: 20px; left: 20px; display: none; pointer-events: none; }
-.stat-box { background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #f39c12; border-radius: 5px; }
+.preview { width: 40px; height: 50px; margin: 0 auto 10px; border: 2px solid #fff; border-radius: 5px; }
+.preview.speedster { background: var(--cyan); }
+.preview.tank { background: var(--pink); }
+.preview.phantom { background: var(--purple); }
 
-#game-arena { width: 100vw; height: 100vh; position: relative; }
+/* HUD STYLING */
+#hud { position: absolute; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 500; pointer-events: none; }
+.hud-item { background: rgba(0,0,0,0.7); padding: 10px; margin-bottom: 5px; border-left: 4px solid var(--cyan); }
+.hp-bar { width: 100px; height: 10px; background: #333; display: inline-block; }
+#ui-hp { height: 100%; background: #0f0; width: 100%; transition: 0.3s; }
 
-.kart {
-  width: 40px; height: 40px; position: absolute; 
-  border-radius: 8px; border: 2px solid #fff;
-  transition: all 0.1s linear;
-}
-.player-name { position: absolute; top: -20px; width: 100px; text-align: center; left: -30px; font-size: 12px; }
-
-.bullet {
-  width: 12px; height: 12px; background: #ff4757; 
-  position: absolute; border-radius: 50%; box-shadow: 0 0 10px #ff4757;
-}
+@keyframes engine-pulse { from { opacity: 0.6; } to { opacity: 1; } }
