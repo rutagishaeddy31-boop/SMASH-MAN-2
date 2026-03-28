@@ -30,3 +30,22 @@
     <script src="script.js"></script>
 </body>
 </html>
+<div id="ui-layer">
+  <div id="auth-box">
+    <h1>SMASH MAN 2.0</h1>
+    <p id="status-text">Ready to Battle?</p>
+    <button id="login-btn">ENTER ARENA (GUEST)</button>
+  </div>
+
+  <div id="hud" style="display:none;">
+    <div class="stat-box">
+      <p>PILOT: <span id="player-name-ui">---</span></p>
+      <p>COINS: <span id="coin-count">0</span></p>
+    </div>
+  </div>
+</div>
+
+<div id="game-arena"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
