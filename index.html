@@ -2,50 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMASH MAN 2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMASH MAN 2.0 | ULTIMATE ARENA</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
+    <div id="game-container">
+        <div id="overlay">
+            <div id="login-modal">
+                <h1 class="neon-title">SMASH MAN 2.0</h1>
+                
+                <div class="selection-zone">
+                    <h3>SELECT YOUR PILOT</h3>
+                    <div class="pilot-grid">
+                        <div class="pilot-option selected" data-type="speedster" data-color="#00f2ff">
+                            <div class="preview speedster"></div>
+                            <span>SPEEDSTER</span>
+                        </div>
+                        <div class="pilot-option" data-type="tank" data-color="#ff0044">
+                            <div class="preview tank"></div>
+                            <span>TANK</span>
+                        </div>
+                        <div class="pilot-option" data-type="phantom" data-color="#bc13fe">
+                            <div class="preview phantom"></div>
+                            <span>PHANTOM</span>
+                        </div>
+                    </div>
+                </div>
 
-    <div id="ui-layer">
-      <h1>SMASH MAN 2.0</h1>
-      
-      <div id="auth-box">
-        <p id="status-text">Arena Status: Online</p>
-        <button id="login-btn">ENTER ARENA</button>
-      </div>
+                <div class="form-group">
+                    <input type="text" id="username" placeholder="ENTER PILOT NAME..." maxlength="12">
+                    <button id="btn-join">ENTER LIVE ARENA</button>
+                </div>
+                
+                <p id="status-msg">ARENA STATUS: <span class="online">ONLINE</span></p>
+            </div>
+        </div>
 
-      <div id="hud">
-        <div class="stat">PILOT: <span id="player-name-ui">---</span></div>
-        <div class="stat">COINS: <span id="coin-count">0</span></div>
-      </div>
+        <div id="hud" class="hidden">
+            <div class="stats-left">
+                <div class="hud-item">PILOT: <span id="ui-name">---</span></div>
+                <div class="hud-item">KILLS: <span id="ui-kills">0</span></div>
+                <div class="hud-item">HP: <div class="hp-bar"><div id="ui-hp"></div></div></div>
+            </div>
+            
+            <div class="stats-right">
+                <div id="leaderboard">
+                    <h4>LEADERBOARD</h4>
+                    <ul id="leader-list"></ul>
+                </div>
+            </div>
+
+            <div class="minimap">
+                <div id="map-point"></div>
+            </div>
+        </div>
+
+        <div id="arena-viewport">
+            <div id="sky-box"></div>
+            <div id="floor-layer">
+                <div id="grid-pattern"></div>
+                <div id="entities-layer"></div>
+                <div id="particle-layer"></div>
+            </div>
+        </div>
     </div>
 
-    <div id="game-arena"></div>
+    <audio id="sfx-fire" src="https://assets.mixkit.co/sfx/preview/mixkit-laser-weapon-shot-1681.mp3"></audio>
 
     <script src="script.js"></script>
 </body>
 </html>
-<div id="ui-layer">
-  <div id="auth-box">
-    <h1>SMASH MAN 2.0</h1>
-    <p id="status-text">Ready to Battle?</p>
-    <button id="login-btn">ENTER ARENA (GUEST)</button>
-  </div>
-
-  <div id="hud" style="display:none;">
-    <div class="stat-box">
-      <p>PILOT: <span id="player-name-ui">---</span></p>
-      <p>COINS: <span id="coin-count">0</span></p>
-    </div>
-  </div>
-</div>
-
-<div id="game-arena"></div>
-
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
