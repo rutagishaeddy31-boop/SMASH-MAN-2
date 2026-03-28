@@ -138,3 +138,28 @@ body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; ov
   font-size: 12px;
   white-space: nowrap;
 }
+#game-arena {
+  width: 100vw;   /* Must have width */
+  height: 100vh;  /* Must have height */
+  position: relative;
+}
+body { margin: 0; background: #1a1a1a; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+
+#ui-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; justify-content: center; align-items: center; }
+#auth-box { pointer-events: all; background: rgba(0,0,0,0.9); padding: 30px; border: 3px solid #f39c12; text-align: center; border-radius: 15px; box-shadow: 0 0 20px #f39c12; }
+#hud { position: absolute; top: 20px; left: 20px; display: none; pointer-events: none; }
+.stat-box { background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #f39c12; border-radius: 5px; }
+
+#game-arena { width: 100vw; height: 100vh; position: relative; }
+
+.kart {
+  width: 40px; height: 40px; position: absolute; 
+  border-radius: 8px; border: 2px solid #fff;
+  transition: all 0.1s linear;
+}
+.player-name { position: absolute; top: -20px; width: 100px; text-align: center; left: -30px; font-size: 12px; }
+
+.bullet {
+  width: 12px; height: 12px; background: #ff4757; 
+  position: absolute; border-radius: 50%; box-shadow: 0 0 10px #ff4757;
+}
