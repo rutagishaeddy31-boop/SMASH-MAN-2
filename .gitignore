@@ -1,0 +1,17 @@
+# Firebase configuration
+# If you ever move your keys to a separate config file, this keeps it safe
+firebase-config.js
+serviceAccountKey.json
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+
+# Local logs
+*.log
+npm-debug.log*
